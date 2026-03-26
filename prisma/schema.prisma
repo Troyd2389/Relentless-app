@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  COACH
+  CLIENT
+}
+
+model User {
+  id            String           @id @default(cuid())
+  email         String           @unique
+  passwordHash  String
+  name          String
+  role          Role
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  coachClients  ClientProfile[]  @relation("CoachToClients")
+  clientProfile ClientProfile?   @relation("ClientUser")
+  coachNotes    CoachNote[]
+
+  @@index([role])
+}
+
+model ClientProfile {
+  id                 String           @id @default(cuid())
+  userId             String           @unique
+  coachId            String
+  currentFocus       String
+  currentStreak      Int              @default(0)
+  weeklyAssigned     Int              @default(5)
+  topPriorities      String
+  nextRecommended    String
+  goals              String
+  status             String           @default("On Track")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  user               User             @relation("ClientUser", fields: [userId], references: [id], onDelete: Cascade)
+  coach              User             @relation("CoachToClients", fields: [coachId], references: [id], onDelete: Cascade)
+  scoreEntries       ScoreEntry[]
+  workoutCheckIns    WorkoutCheckIn[]
+  habitEntries       HabitEntry[]
+  trainingPlans      TrainingPlan[]
+  coachNotes         CoachNote[]
+}
+
+model ScoreEntry {
+  id               String        @id @default(cuid())
+  clientProfileId  String
+  date             DateTime
+  relentlessScore  Int
+  cardio           Int
+  strength         Int
+  mobility         Int
+  balance          Int
+  bodyComposition  Int
+  lifestyle        Int
+  note             String?
+  clientProfile    ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+
+  @@index([clientProfileId, date])
+}
+
+model WorkoutCheckIn {
+  id               String        @id @default(cuid())
+  clientProfileId  String
+  date             DateTime      @default(now())
+  workoutCompleted Boolean
+  energy           Int
+  soreness         Int
+  notes            String?
+  clientProfile    ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+
+  @@index([clientProfileId, date])
+}
+
+model HabitEntry {
+  id               String        @id @default(cuid())
+  clientProfileId  String
+  date             DateTime
+  sleepHours       Float
+  steps            Int
+  strengthSessions Int
+  cardioSessions   Int
+  mobilitySessions Int
+  clientProfile    ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+
+  @@index([clientProfileId, date])
+}
+
+model TrainingPlan {
+  id               String        @id @default(cuid())
+  clientProfileId  String
+  title            String
+  summary          String
+  isActive         Boolean       @default(true)
+  startDate        DateTime
+  endDate          DateTime?
+  clientProfile    ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+}
+
+model CoachNote {
+  id               String        @id @default(cuid())
+  clientProfileId  String
+  coachId          String
+  content          String
+  createdAt        DateTime      @default(now())
+  clientProfile    ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+  coach            User          @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@index([clientProfileId, createdAt])
+}
