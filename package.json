@@ -1,0 +1,20 @@
+{
+  "name": "relentless-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 prisma generate",
+    "prisma:migrate": "PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 prisma migrate dev --name init",
+    "prisma:seed": "prisma db seed"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.5.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "prisma": "^7.5.0"
+  }
+}
